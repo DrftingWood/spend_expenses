@@ -34,4 +34,10 @@ interface ExpenseDao {
 
     @Query("SELECT EXISTS(SELECT 1 FROM expenses WHERE smsId = :smsId)")
     suspend fun existsBySmsId(smsId: Long): Boolean
+
+    @Query("DELETE FROM expenses WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
+    @Query("SELECT * FROM expenses ORDER BY timestamp DESC")
+    suspend fun snapshot(): List<Expense>
 }

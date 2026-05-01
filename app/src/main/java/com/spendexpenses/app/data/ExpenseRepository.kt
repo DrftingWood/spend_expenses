@@ -42,4 +42,31 @@ class ExpenseRepository(
             expenseDao.applyCategoryToMerchant(expense.merchant, category)
         }
     }
+
+    suspend fun delete(expense: Expense) = expenseDao.deleteById(expense.id)
+
+    suspend fun addManual(
+        amount: Double,
+        direction: Direction,
+        merchant: String,
+        category: Category,
+        timestamp: Long,
+        note: String
+    ) {
+        val signed = if (direction == Direction.DEBIT) amount else -amount
+        expenseDao.insert(
+            Expense(
+                amount = signed,
+                direction = direction,
+                merchant = merchant,
+                category = category,
+                timestamp = timestamp,
+                rawSms = note,
+                sender = "manual",
+                smsId = null
+            )
+        )
+    }
+
+    suspend fun snapshot(): List<Expense> = expenseDao.snapshot()
 }
