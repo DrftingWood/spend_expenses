@@ -14,11 +14,13 @@ class ExpenseRepository(
     fun observeSince(since: Long): Flow<List<Expense>> = expenseDao.observeSince(since)
     fun observeUncategorized(): Flow<List<Expense>> = expenseDao.observeUncategorized()
 
-    suspend fun ingest(parsed: ParsedSms): Long? {
+    data class IngestResult(val id: Long, val category: Category, val merchant: String, val amount: Double)
+
+    suspend fun ingest(parsed: ParsedSms): IngestResult? {
         if (parsed.smsId != null && expenseDao.existsBySmsId(parsed.smsId)) return null
         val cat = categorizer.categorize(parsed.merchant, merchantDao)
         val signed = if (parsed.direction == Direction.DEBIT) parsed.amount else -parsed.amount
-        return expenseDao.insert(
+        val id = expenseDao.insert(
             Expense(
                 amount = signed,
                 direction = parsed.direction,
@@ -29,7 +31,8 @@ class ExpenseRepository(
                 sender = parsed.sender,
                 smsId = parsed.smsId
             )
-        ).takeIf { it > 0 }
+        )
+        return if (id > 0) IngestResult(id, cat, parsed.merchant, parsed.amount) else null
     }
 
     suspend fun assignCategory(expense: Expense, category: Category, remember: Boolean) {

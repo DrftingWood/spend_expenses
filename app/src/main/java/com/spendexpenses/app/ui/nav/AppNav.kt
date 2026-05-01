@@ -26,7 +26,12 @@ private object Routes {
 }
 
 @Composable
-fun AppNav(hasSmsPermission: Boolean, onRequestPermission: () -> Unit) {
+fun AppNav(
+    hasSmsPermission: Boolean,
+    onRequestPermission: () -> Unit,
+    deepLinkExpenseId: Long? = null,
+    onDeepLinkConsumed: () -> Unit = {}
+) {
     val nav = rememberNavController()
     val backStack by nav.currentBackStackEntryAsState()
     val current = backStack?.destination
@@ -57,7 +62,9 @@ fun AppNav(hasSmsPermission: Boolean, onRequestPermission: () -> Unit) {
             composable(Routes.HOME) {
                 HomeScreen(
                     hasSmsPermission = hasSmsPermission,
-                    onRequestPermission = onRequestPermission
+                    onRequestPermission = onRequestPermission,
+                    deepLinkExpenseId = deepLinkExpenseId,
+                    onDeepLinkConsumed = onDeepLinkConsumed
                 )
             }
             composable(Routes.ANALYTICS) { AnalyticsScreen() }

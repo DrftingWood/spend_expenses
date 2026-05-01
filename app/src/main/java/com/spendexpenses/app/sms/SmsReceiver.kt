@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Telephony
 import com.spendexpenses.app.SpendApp
+import com.spendexpenses.app.categorize.Category
+import com.spendexpenses.app.notify.Notifications
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -25,9 +27,13 @@ class SmsReceiver : BroadcastReceiver() {
         val ts = messages.first().timestampMillis
 
         val parsed = SmsParser.parse(body, sender, ts, smsId = null) ?: return
-        val repo = (context.applicationContext as SpendApp).repository
+        val app = context.applicationContext as SpendApp
+        val repo = app.repository
         scope.launch {
-            repo.ingest(parsed)
+            val result = repo.ingest(parsed) ?: return@launch
+            if (result.category == Category.UNCATEGORIZED) {
+                Notifications.postUncategorized(app, result.id, result.merchant, result.amount)
+            }
         }
     }
 }

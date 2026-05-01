@@ -37,11 +37,20 @@ import kotlin.math.abs
 fun HomeScreen(
     hasSmsPermission: Boolean,
     onRequestPermission: () -> Unit,
+    deepLinkExpenseId: Long? = null,
+    onDeepLinkConsumed: () -> Unit = {},
     vm: HomeViewModel = viewModel()
 ) {
     val expenses by vm.expenses.collectAsStateWithLifecycle()
     val uncategorized by vm.uncategorized.collectAsStateWithLifecycle()
     var assigning by remember { mutableStateOf<Expense?>(null) }
+
+    androidx.compose.runtime.LaunchedEffect(deepLinkExpenseId, expenses) {
+        val id = deepLinkExpenseId ?: return@LaunchedEffect
+        val match = expenses.firstOrNull { it.id == id } ?: return@LaunchedEffect
+        assigning = match
+        onDeepLinkConsumed()
+    }
 
     Column(Modifier.fillMaxWidth().padding(16.dp)) {
         Text("Recent transactions", style = MaterialTheme.typography.headlineSmall)
