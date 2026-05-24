@@ -72,6 +72,8 @@ fun HomeScreen(
     var adding by remember { mutableStateOf(false) }
     var menuOpen by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<Expense?>(null) }
+    var editing by remember { mutableStateOf<Expense?>(null) }
+    var rowMenuFor by remember { mutableStateOf<Expense?>(null) }
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -164,7 +166,7 @@ fun HomeScreen(
                     ExpenseRow(
                         e,
                         onClick = { assigning = e },
-                        onLongPress = { pendingDelete = e }
+                        onLongPress = { rowMenuFor = e }
                     )
                 }
             }
@@ -189,6 +191,33 @@ fun HomeScreen(
             onSave = { amount, dir, merchant, cat, ts, note ->
                 vm.addManual(amount, dir, merchant, cat, ts, note)
                 adding = false
+            }
+        )
+    }
+
+    editing?.let { exp ->
+        AddExpenseDialog(
+            initial = exp,
+            onDismiss = { editing = null },
+            onSave = { amount, dir, merchant, cat, ts, _ ->
+                vm.update(exp.id, amount, dir, merchant, cat, ts)
+                editing = null
+            }
+        )
+    }
+
+    rowMenuFor?.let { exp ->
+        AlertDialog(
+            onDismissRequest = { rowMenuFor = null },
+            title = { Text(exp.merchant) },
+            text = { Text("₹${"%,.2f".format(abs(exp.amount))} • ${exp.category.display}") },
+            confirmButton = {
+                Button(onClick = { editing = exp; rowMenuFor = null }) { Text("Edit") }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDelete = exp; rowMenuFor = null }) {
+                    Text("Delete")
+                }
             }
         )
     }

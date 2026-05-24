@@ -34,6 +34,19 @@ class HomeViewModel(private val app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { repo.delete(expense) }
     }
 
+    fun update(
+        id: Long,
+        amount: Double,
+        direction: Direction,
+        merchant: String,
+        category: Category,
+        timestamp: Long
+    ) {
+        viewModelScope.launch {
+            repo.updateExpense(id, amount, direction, merchant, category, timestamp)
+        }
+    }
+
     fun addManual(
         amount: Double,
         direction: Direction,

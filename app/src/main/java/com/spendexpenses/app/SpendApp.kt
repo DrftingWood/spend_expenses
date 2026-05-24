@@ -18,7 +18,12 @@ class SpendApp : Application() {
         super.onCreate()
         val db = AppDatabase.get(this)
         val categorizer = Categorizer()
-        repository = ExpenseRepository(db.expenseDao(), db.merchantCategoryDao(), categorizer)
+        repository = ExpenseRepository(
+            db.expenseDao(),
+            db.merchantCategoryDao(),
+            db.budgetDao(),
+            categorizer
+        )
         importer = SmsImporter(this, repository)
     }
 }

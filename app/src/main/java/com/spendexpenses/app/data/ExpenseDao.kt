@@ -38,6 +38,19 @@ interface ExpenseDao {
     @Query("DELETE FROM expenses WHERE id = :id")
     suspend fun deleteById(id: Long)
 
+    @Query("""UPDATE expenses
+              SET amount = :amount, direction = :direction, merchant = :merchant,
+                  category = :category, timestamp = :timestamp
+              WHERE id = :id""")
+    suspend fun update(
+        id: Long,
+        amount: Double,
+        direction: Direction,
+        merchant: String,
+        category: Category,
+        timestamp: Long
+    )
+
     @Query("SELECT * FROM expenses ORDER BY timestamp DESC")
     suspend fun snapshot(): List<Expense>
 }

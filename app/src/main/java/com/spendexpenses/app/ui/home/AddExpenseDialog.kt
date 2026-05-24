@@ -25,20 +25,24 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.spendexpenses.app.categorize.Category
 import com.spendexpenses.app.data.Direction
+import com.spendexpenses.app.data.Expense
+import kotlin.math.abs
 
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun AddExpenseDialog(
+    initial: Expense? = null,
     onDismiss: () -> Unit,
     onSave: (Double, Direction, String, Category, Long, String) -> Unit
 ) {
-    var amount by remember { mutableStateOf("") }
-    var merchant by remember { mutableStateOf("") }
-    var note by remember { mutableStateOf("") }
-    var direction by remember { mutableStateOf(Direction.DEBIT) }
-    var category by remember { mutableStateOf(Category.OTHER) }
+    var amount by remember { mutableStateOf(initial?.let { "%.2f".format(abs(it.amount)) } ?: "") }
+    var merchant by remember { mutableStateOf(initial?.merchant ?: "") }
+    var note by remember { mutableStateOf(initial?.rawSms ?: "") }
+    var direction by remember { mutableStateOf(initial?.direction ?: Direction.DEBIT) }
+    var category by remember { mutableStateOf(initial?.category?.takeIf { it != Category.UNCATEGORIZED } ?: Category.OTHER) }
 
     val canSave = amount.toDoubleOrNull()?.let { it > 0.0 } == true && merchant.isNotBlank()
+    val isEdit = initial != null
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -51,35 +55,32 @@ fun AddExpenseDialog(
                         direction,
                         merchant.trim(),
                         category,
-                        System.currentTimeMillis(),
+                        initial?.timestamp ?: System.currentTimeMillis(),
                         note.trim()
                     )
                 }
-            ) { Text("Save") }
+            ) { Text(if (isEdit) "Update" else "Save") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
-        title = { Text("Add expense") },
+        title = { Text(if (isEdit) "Edit expense" else "Add expense") },
         text = {
             Column {
                 OutlinedTextField(
                     value = amount, onValueChange = { amount = it },
-                    label = { Text("Amount (₹)") },
-                    singleLine = true,
+                    label = { Text("Amount (₹)") }, singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
                     value = merchant, onValueChange = { merchant = it },
-                    label = { Text("Merchant") },
-                    singleLine = true,
+                    label = { Text("Merchant") }, singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
                     value = note, onValueChange = { note = it },
-                    label = { Text("Note (optional)") },
-                    singleLine = true,
+                    label = { Text("Note (optional)") }, singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(12.dp))

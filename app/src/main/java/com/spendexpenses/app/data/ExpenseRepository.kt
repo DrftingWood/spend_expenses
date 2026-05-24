@@ -8,8 +8,27 @@ import kotlinx.coroutines.flow.Flow
 class ExpenseRepository(
     private val expenseDao: ExpenseDao,
     private val merchantDao: MerchantCategoryDao,
+    private val budgetDao: BudgetDao,
     private val categorizer: Categorizer
 ) {
+    fun observeBudgets(): Flow<List<Budget>> = budgetDao.observeAll()
+    suspend fun setBudget(category: Category, monthlyLimit: Double) {
+        if (monthlyLimit <= 0.0) budgetDao.delete(category)
+        else budgetDao.upsert(Budget(category, monthlyLimit))
+    }
+
+    suspend fun updateExpense(
+        id: Long,
+        amount: Double,
+        direction: Direction,
+        merchant: String,
+        category: Category,
+        timestamp: Long
+    ) {
+        val signed = if (direction == Direction.DEBIT) amount else -amount
+        expenseDao.update(id, signed, direction, merchant, category, timestamp)
+    }
+
     fun observeAll(): Flow<List<Expense>> = expenseDao.observeAll()
     fun observeSince(since: Long): Flow<List<Expense>> = expenseDao.observeSince(since)
     fun observeUncategorized(): Flow<List<Expense>> = expenseDao.observeUncategorized()

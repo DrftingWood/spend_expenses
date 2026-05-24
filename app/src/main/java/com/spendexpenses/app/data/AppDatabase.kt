@@ -7,14 +7,15 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(
-    entities = [Expense::class, MerchantCategory::class],
-    version = 1,
+    entities = [Expense::class, MerchantCategory::class, Budget::class],
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun expenseDao(): ExpenseDao
     abstract fun merchantCategoryDao(): MerchantCategoryDao
+    abstract fun budgetDao(): BudgetDao
 
     companion object {
         @Volatile private var INSTANCE: AppDatabase? = null
@@ -24,7 +25,10 @@ abstract class AppDatabase : RoomDatabase() {
                 ctx.applicationContext,
                 AppDatabase::class.java,
                 "spend.db"
-            ).build().also { INSTANCE = it }
+            )
+                .fallbackToDestructiveMigration()
+                .build()
+                .also { INSTANCE = it }
         }
     }
 }

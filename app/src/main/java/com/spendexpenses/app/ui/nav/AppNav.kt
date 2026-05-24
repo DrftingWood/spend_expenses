@@ -2,6 +2,7 @@ package com.spendexpenses.app.ui.nav
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Icon
@@ -18,10 +19,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.spendexpenses.app.ui.analytics.AnalyticsScreen
+import com.spendexpenses.app.ui.budgets.BudgetsScreen
 import com.spendexpenses.app.ui.home.HomeScreen
 
 private object Routes {
     const val HOME = "home"
+    const val BUDGETS = "budgets"
     const val ANALYTICS = "analytics"
 }
 
@@ -46,6 +49,12 @@ fun AppNav(
                     label = { Text("Home") }
                 )
                 NavigationBarItem(
+                    selected = current?.hierarchy?.any { it.route == Routes.BUDGETS } == true,
+                    onClick = { nav.navigate(Routes.BUDGETS) { launchSingleTop = true } },
+                    icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = null) },
+                    label = { Text("Budgets") }
+                )
+                NavigationBarItem(
                     selected = current?.hierarchy?.any { it.route == Routes.ANALYTICS } == true,
                     onClick = { nav.navigate(Routes.ANALYTICS) { launchSingleTop = true } },
                     icon = { Icon(Icons.Default.BarChart, contentDescription = null) },
@@ -67,6 +76,7 @@ fun AppNav(
                     onDeepLinkConsumed = onDeepLinkConsumed
                 )
             }
+            composable(Routes.BUDGETS) { BudgetsScreen() }
             composable(Routes.ANALYTICS) { AnalyticsScreen() }
         }
     }
